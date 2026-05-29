@@ -102,6 +102,7 @@ export function CaptureScreen() {
   const [zoomCaps, setZoomCaps] = useState<ZoomCaps | null>(null)
   const [results, setResults] = useState<readonly ResultItem[]>([])
   const [camError, setCamError] = useState<string | null>(null)
+  const [camReady, setCamReady] = useState(false)
   const [reading, setReading] = useState(false)
   const [stats, setStats] = useState<Stats>({ attempts: 0, lastStatus: '—' })
   const [camRetry, setCamRetry] = useState(0)
@@ -112,6 +113,7 @@ export function CaptureScreen() {
 
     async function init() {
       try {
+        setCamReady(false)
         streamRef.current?.getTracks().forEach((t) => t.stop())
         streamRef.current = null
 
@@ -129,7 +131,13 @@ export function CaptureScreen() {
         const vid = videoRef.current
         if (vid) {
           vid.srcObject = stream
-          await vid.play().catch(() => {})
+          try {
+            await vid.play()
+          } catch {
+            vid.muted = true
+            await vid.play()
+          }
+          setCamReady(true)
         }
 
         const track = stream.getVideoTracks()[0]
@@ -277,15 +285,20 @@ export function CaptureScreen() {
       <div className="flex min-h-0 flex-1 flex-col landscape:flex-row">
         {/* Camera */}
         <section
-          className={`relative min-h-0 flex-1 overflow-hidden bg-black ${camVisible ? '' : 'hidden'}`}
+          className={`relative overflow-hidden bg-black ${camVisible ? 'min-h-[200px] flex-1' : 'hidden'}`}
         >
           <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
-            className="h-full w-full object-contain"
+            className="absolute inset-0 h-full w-full object-contain"
           />
+          {!camReady && !camError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black text-sm text-neutral-400">
+              カメラを起動中...
+            </div>
+          )}
           {camError && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/70 p-6 text-center text-sm text-red-300">
               <p>{camError}</p>
