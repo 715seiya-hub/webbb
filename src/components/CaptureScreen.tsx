@@ -106,6 +106,28 @@ export function CaptureScreen() {
   const [reading, setReading] = useState(false)
   const [stats, setStats] = useState<Stats>({ attempts: 0, lastStatus: '—' })
   const [camRetry, setCamRetry] = useState(0)
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([])
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null)
+  const [camLabel, setCamLabel] = useState('')
+
+  // Enumerate cameras
+  useEffect(() => {
+    async function listDevices() {
+      try {
+        const all = await navigator.mediaDevices.enumerateDevices()
+        const videoDevices = all.filter((d) => d.kind === 'videoinput')
+        setDevices(videoDevices)
+      } catch {
+        /* ignore */
+      }
+    }
+    listDevices()
+
+    navigator.mediaDevices.addEventListener('devicechange', listDevices)
+    return () => {
+      navigator.mediaDevices.removeEventListener('devicechange', listDevices)
+    }
+  }, [])
 
   // Camera init
   useEffect(() => {
@@ -117,10 +139,14 @@ export function CaptureScreen() {
         streamRef.current?.getTracks().forEach((t) => t.stop())
         streamRef.current = null
 
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: facing } },
+        const constraints: MediaStreamConstraints = {
+          video: selectedDeviceId
+            ? { deviceId: { exact: selectedDeviceId } }
+            : { facingMode: { ideal: facing } },
           audio: false,
-        })
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints)
 
         if (cancelled) {
           stream.getTracks().forEach((t) => t.stop())
@@ -141,6 +167,13 @@ export function CaptureScreen() {
         }
 
         const track = stream.getVideoTracks()[0]
+        setCamLabel(track?.label ?? '')
+
+        // Re-enumerate to get labels (available after permission granted)
+        const all = await navigator.mediaDevices.enumerateDevices()
+        const videoDevices = all.filter((d) => d.kind === 'videoinput')
+        setDevices(videoDevices)
+
         const caps = (track?.getCapabilities?.() ?? {}) as Record<string, unknown>
         if (caps.zoom) {
           const z = caps.zoom as { min: number; max: number; step?: number }
@@ -162,7 +195,7 @@ export function CaptureScreen() {
     return () => {
       cancelled = true
     }
-  }, [facing, camRetry])
+  }, [facing, selectedDeviceId, camRetry])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -419,17 +452,48 @@ export function CaptureScreen() {
             </button>
             <button
               type="button"
-              onClick={() =>
+              onClick={() => {
+                setSelectedDeviceId(null)
                 setFacing((f) =>
                   f === 'environment' ? 'user' : 'environment'
                 )
-              }
+              }}
               className="rounded-full border border-neutral-500 px-3 py-1.5 text-xs text-neutral-100 active:scale-95"
               aria-label="カメラ切替"
             >
               ⟲ {facing === 'environment' ? '背面' : '前面'}
             </button>
+            {/* Camera lens selector (wide, normal, etc.) */}
+            {devices.filter((d) => d.label).length > 1 && (
+              <select
+                value={selectedDeviceId ?? ''}
+                onChange={(e) => {
+                  const id = e.target.value
+                  if (id) {
+                    setSelectedDeviceId(id)
+                  } else {
+                    setSelectedDeviceId(null)
+                  }
+                }}
+                className="rounded-full border border-neutral-500 bg-neutral-800 px-2 py-1.5 text-xs text-neutral-100"
+                aria-label="カメラレンズ選択"
+              >
+                <option value="">自動</option>
+                {devices.map((d) => (
+                  <option key={d.deviceId} value={d.deviceId}>
+                    {d.label.replace(/\s*\(.*?\)\s*/g, '').slice(0, 20) ||
+                      `カメラ ${d.deviceId.slice(0, 4)}`}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
+          {/* Current camera label */}
+          {camLabel && (
+            <span className="text-[10px] text-neutral-500">
+              {camLabel.slice(0, 30)}
+            </span>
+          )}
         </div>
 
         {/* Zoom slider */}
