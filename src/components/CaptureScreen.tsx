@@ -73,15 +73,17 @@ async function callOcr(
     try {
       const body = await res.json()
       if (body.status === 429) detail = 'RATE LIMIT (429)'
-      else if (body.status) detail = `${body.error ?? 'err'} ${body.status}`
       else if (body.error) detail = body.error
+      else if (body.status) detail = `err ${body.status}`
+      if (body.detail) detail += ` | ${body.detail}`
     } catch {
-      /* ignore */
+      detail = await res.text().catch(() => 'unknown')
     }
-    throw new Error(`OCR ${res.status}${detail ? ` · ${detail}` : ''}`)
+    throw new Error(`OCR ${res.status} · ${detail}`)
   }
 
-  return await res.json()
+  const data = await res.json()
+  return data
 }
 
 export function CaptureScreen() {
