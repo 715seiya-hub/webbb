@@ -275,17 +275,11 @@ export function CaptureScreen() {
 
   return (
     <main className="flex h-dvh flex-col">
-      {/* Portrait warning banner */}
-      <div className="hidden items-center justify-center gap-2 bg-yellow-600 px-4 py-2 text-center text-sm text-black portrait:flex">
-        <span>⟲</span>
-        <span>横向き推奨</span>
-      </div>
-
       {/* Main content */}
       <div className="flex min-h-0 flex-1 flex-col landscape:flex-row">
         {/* Camera */}
         <section
-          className={`relative overflow-hidden bg-black ${camVisible ? 'min-h-[200px] flex-1' : 'hidden'}`}
+          className={`relative overflow-hidden bg-black ${camVisible ? 'min-h-[40vh] landscape:min-h-0 flex-1' : 'hidden'}`}
         >
           <video
             ref={videoRef}
@@ -337,7 +331,7 @@ export function CaptureScreen() {
         {/* Results */}
         <section
           ref={scrollRef}
-          className="min-h-0 flex-1 overflow-y-auto border-t border-neutral-700 bg-white px-4 py-3 text-base leading-relaxed text-black landscape:border-l landscape:border-t-0"
+          className="min-h-[120px] flex-1 overflow-y-auto border-t border-neutral-700 bg-white px-4 py-3 text-base leading-relaxed text-black landscape:border-l landscape:border-t-0"
         >
           {results.length === 0 ? (
             <p className="text-neutral-600">
@@ -368,10 +362,11 @@ export function CaptureScreen() {
       </div>
 
       {/* Controls */}
-      <div className="flex flex-col gap-2 border-t border-neutral-800 bg-neutral-900 px-4 py-3">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-2 border-t border-neutral-800 bg-neutral-900 px-3 py-2">
+        {/* Top row: settings */}
+        <div className="flex flex-wrap items-center gap-2">
           {/* Timer slider */}
-          <label className="flex flex-1 items-center gap-2 text-xs text-neutral-200">
+          <label className="flex min-w-[100px] flex-1 items-center gap-2 text-xs text-neutral-200">
             <span className="w-7 tabular-nums">{interval}s</span>
             <input
               type="range"
@@ -412,29 +407,29 @@ export function CaptureScreen() {
             </button>
           </div>
 
-          {/* Camera visibility */}
-          <button
-            type="button"
-            onClick={() => setCamVisible((v) => !v)}
-            className="rounded-full border border-neutral-500 px-3 py-1.5 text-xs text-neutral-100 active:scale-95"
-            aria-label="カメラ表示切替"
-          >
-            {camVisible ? '📷 隠す' : '📷 表示'}
-          </button>
-
-          {/* Camera facing */}
-          <button
-            type="button"
-            onClick={() =>
-              setFacing((f) =>
-                f === 'environment' ? 'user' : 'environment'
-              )
-            }
-            className="rounded-full border border-neutral-500 px-3 py-1.5 text-xs text-neutral-100 active:scale-95"
-            aria-label="カメラ切替"
-          >
-            ⟲ {facing === 'environment' ? '背面' : '前面'}
-          </button>
+          {/* Camera buttons */}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setCamVisible((v) => !v)}
+              className="rounded-full border border-neutral-500 px-3 py-1.5 text-xs text-neutral-100 active:scale-95"
+              aria-label="カメラ表示切替"
+            >
+              {camVisible ? '📷 隠す' : '📷 表示'}
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                setFacing((f) =>
+                  f === 'environment' ? 'user' : 'environment'
+                )
+              }
+              className="rounded-full border border-neutral-500 px-3 py-1.5 text-xs text-neutral-100 active:scale-95"
+              aria-label="カメラ切替"
+            >
+              ⟲ {facing === 'environment' ? '背面' : '前面'}
+            </button>
+          </div>
         </div>
 
         {/* Zoom slider */}
@@ -468,7 +463,7 @@ export function CaptureScreen() {
           <button
             type="button"
             onClick={() => setRunning((r) => !r)}
-            className={`flex-1 rounded-full px-6 py-4 text-xl font-bold shadow-md transition active:scale-95 ${
+            className={`flex-1 rounded-full px-4 py-3 text-lg font-bold shadow-md transition active:scale-95 ${
               running
                 ? 'bg-red-500 text-white'
                 : 'bg-emerald-500 text-black'
@@ -480,7 +475,7 @@ export function CaptureScreen() {
             type="button"
             onClick={doCapture}
             disabled={reading}
-            className="flex-1 rounded-full bg-blue-500 px-6 py-4 text-xl font-bold text-white shadow-md transition active:scale-95 disabled:opacity-50"
+            className="flex-1 rounded-full bg-blue-500 px-4 py-3 text-lg font-bold text-white shadow-md transition active:scale-95 disabled:opacity-50"
           >
             📸 撮影
           </button>
