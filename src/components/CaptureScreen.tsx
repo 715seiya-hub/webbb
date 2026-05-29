@@ -104,6 +104,7 @@ export function CaptureScreen() {
   const [camError, setCamError] = useState<string | null>(null)
   const [reading, setReading] = useState(false)
   const [stats, setStats] = useState<Stats>({ attempts: 0, lastStatus: '—' })
+  const [camRetry, setCamRetry] = useState(0)
 
   // Camera init
   useEffect(() => {
@@ -153,7 +154,7 @@ export function CaptureScreen() {
     return () => {
       cancelled = true
     }
-  }, [facing])
+  }, [facing, camRetry])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -265,16 +266,11 @@ export function CaptureScreen() {
   }, [zoom, zoomCaps])
 
   return (
-    <main className="flex h-svh flex-col">
-      {/* Portrait blocker */}
-      <div className="fixed inset-0 z-50 hidden flex-col items-center justify-center gap-4 bg-neutral-950 p-8 text-center portrait:flex">
-        <div className="text-6xl">⟲</div>
-        <p className="text-lg font-medium text-white">
-          画面を横向きにしてください
-        </p>
-        <p className="text-sm text-neutral-300">
-          このアプリは横向き専用です
-        </p>
+    <main className="flex h-dvh flex-col">
+      {/* Portrait warning banner */}
+      <div className="hidden items-center justify-center gap-2 bg-yellow-600 px-4 py-2 text-center text-sm text-black portrait:flex">
+        <span>⟲</span>
+        <span>横向き推奨</span>
       </div>
 
       {/* Main content */}
@@ -285,13 +281,24 @@ export function CaptureScreen() {
         >
           <video
             ref={videoRef}
+            autoPlay
             playsInline
             muted
             className="h-full w-full object-contain"
           />
           {camError && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/70 p-6 text-center text-sm text-red-300">
-              {camError}
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/70 p-6 text-center text-sm text-red-300">
+              <p>{camError}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setCamError(null)
+                  setCamRetry((n) => n + 1)
+                }}
+                className="rounded-full bg-neutral-700 px-4 py-2 text-xs text-white"
+              >
+                再試行
+              </button>
             </div>
           )}
           {reading && (
