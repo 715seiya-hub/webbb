@@ -409,8 +409,8 @@ export function CaptureScreen() {
             <span className="w-7 tabular-nums">{interval}s</span>
             <input
               type="range"
-              min={4}
-              max={15}
+              min={8}
+              max={30}
               step={1}
               value={interval}
               onChange={(e) => setInterval_(Number(e.target.value))}
