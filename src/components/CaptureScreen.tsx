@@ -35,7 +35,7 @@ async function captureFrame(
 
   ctx.drawImage(video, 0, 0, w, h)
   const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.8)
+    canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.6)
   )
   return blob ? { blob, reason: '' } : { blob: null, reason: 'toBlob failed' }
 }
@@ -66,7 +66,7 @@ export function CaptureScreen() {
   const deepRef = useRef(false)
 
   const [running, setRunning] = useState(false)
-  const [sec, setSec] = useState(15)
+  const [sec, setSec] = useState(5)
   const [facing, setFacing] = useState<'environment' | 'user'>('environment')
   const [showCam, setShowCam] = useState(true)
   const [deep, setDeep] = useState(false)
@@ -250,7 +250,7 @@ export function CaptureScreen() {
         <div className="flex flex-wrap items-center gap-2">
           <label className="flex min-w-[90px] flex-1 items-center gap-1 text-xs text-neutral-200">
             <span className="w-7 tabular-nums">{sec}s</span>
-            <input type="range" min={8} max={60} step={1} value={sec}
+            <input type="range" min={3} max={30} step={1} value={sec}
               onChange={(e) => setSec(Number(e.target.value))} className="flex-1 accent-emerald-500" />
           </label>
 
