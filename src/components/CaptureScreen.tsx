@@ -94,7 +94,7 @@ export function CaptureScreen() {
   const deepRef = useRef(false)
 
   const [running, setRunning] = useState(false)
-  const [interval, setInterval_] = useState(7)
+  const [interval, setInterval_] = useState(10)
   const [facing, setFacing] = useState<'environment' | 'user'>('environment')
   const [camVisible, setCamVisible] = useState(true)
   const [deepMode, setDeepMode] = useState(false)
@@ -256,7 +256,14 @@ export function CaptureScreen() {
       })
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
-      setStats((s) => ({ ...s, lastStatus: `error: ${msg.slice(0, 80)}` }))
+      // On rate limit, pause for 30 seconds
+      if (msg.includes('429')) {
+        setStats((s) => ({ ...s, lastStatus: `rate limit — 30秒待機中…` }))
+        await new Promise((r) => setTimeout(r, 30000))
+        setStats((s) => ({ ...s, lastStatus: `rate limit 解除 — 再開` }))
+      } else {
+        setStats((s) => ({ ...s, lastStatus: `error: ${msg.slice(0, 80)}` }))
+      }
     } finally {
       busyRef.current = false
       setReading(false)
