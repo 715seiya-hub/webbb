@@ -94,7 +94,7 @@ export function CaptureScreen() {
   const deepRef = useRef(false)
 
   const [running, setRunning] = useState(false)
-  const [interval, setInterval_] = useState(10)
+  const [interval, setInterval_] = useState(15)
   const [facing, setFacing] = useState<'environment' | 'user'>('environment')
   const [camVisible, setCamVisible] = useState(true)
   const [deepMode, setDeepMode] = useState(false)
@@ -256,11 +256,8 @@ export function CaptureScreen() {
       })
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
-      // On rate limit, pause for 30 seconds
       if (msg.includes('429')) {
-        setStats((s) => ({ ...s, lastStatus: `rate limit — 30秒待機中…` }))
-        await new Promise((r) => setTimeout(r, 30000))
-        setStats((s) => ({ ...s, lastStatus: `rate limit 解除 — 再開` }))
+        setStats((s) => ({ ...s, lastStatus: `レート制限 — 次回まで待機` }))
       } else {
         setStats((s) => ({ ...s, lastStatus: `error: ${msg.slice(0, 80)}` }))
       }
