@@ -1,0 +1,10 @@
+{
+  "name": "Web Catch",
+  "short_name": "WebCatch",
+  "description": "Capture screen via phone camera and transcribe with OCR",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "theme_color": "#0a0a0a",
+  "background_color": "#0a0a0a"
+}
