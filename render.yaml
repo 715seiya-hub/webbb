@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: web-catch
+    runtime: node
+    buildCommand: pnpm install && pnpm build
+    startCommand: pnpm start
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
